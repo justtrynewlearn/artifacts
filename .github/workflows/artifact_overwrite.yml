@@ -1,0 +1,37 @@
+name: Artifact Overwrite Practice
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  overwrite-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create first version
+        run: |
+          echo "Version 1" > result.txt
+
+      - name: Upload first version
+        uses: actions/upload-artifact@v4
+        with:
+          name: overwrite-test
+          path: result.txt
+
+      - name: Create second version
+        run: |
+          echo "Version 2" > result.txt
+
+      - name: Upload second version
+        uses: actions/upload-artifact@v4
+        with:
+          name: overwrite-test
+          path: result.txt
+          overwrite: true
+
+      - name: Show final file
+        run: |
+          echo "Final file:"
+          cat result.txt
