@@ -6,19 +6,41 @@ on:
       - master
 
 jobs:
-  upload-artifact:
+  performance-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create result files
+      - name: Create test result
         run: |
           mkdir results
-          echo "Performance test completed" > results/result.txt
-          echo "Requests=1000" > results/metrics.csv
-          echo "<html><body>Performance Report</body></html>" > results/report.html
+          echo "Performance test completed successfully" > results/result.txt
+          echo "Requests=1000" > results/metrics.txt
 
-      - name: Upload results directory
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
           name: performance-results
           path: results/
+
+  report:
+    needs: performance-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v5
+        with:
+          name: performance-results
+
+      - name: Show downloaded files
+        run: |
+          echo "Downloaded files:"
+          ls -la
+
+      - name: Read test result
+        run: |
+          echo "Result:"
+          cat result.txt
+
+          echo "Metrics:"
+          cat metrics.txt
