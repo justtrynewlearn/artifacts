@@ -1,4 +1,4 @@
-name: Artifact Practice
+name: Performance Artifact Practice
 
 on:
   push:
@@ -10,13 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create test result
+      - name: Run performance test
         run: |
-          mkdir results
-          echo "Performance test completed successfully" > results/result.txt
-          echo "Requests=1000" > results/metrics.txt
+          mkdir -p results/html-report
 
-      - name: Upload test results
+          echo "time,response_time,status" > results/results.jtl
+          echo "10:00:01,120,200" >> results/results.jtl
+          echo "10:00:02,150,200" >> results/results.jtl
+          echo "10:00:03,95,200" >> results/results.jtl
+
+          echo "JMeter test completed successfully" > results/jmeter.log
+
+          echo "<html>" > results/html-report/index.html
+          echo "<body>" >> results/html-report/index.html
+          echo "<h1>Performance Test Report</h1>" >> results/html-report/index.html
+          echo "<p>Requests: 3</p>" >> results/html-report/index.html
+          echo "<p>Average response time: 121.7 ms</p>" >> results/html-report/index.html
+          echo "</body>" >> results/html-report/index.html
+          echo "</html>" >> results/html-report/index.html
+
+      - name: Show generated results
+        run: |
+          echo "Generated files:"
+          find results -type f
+
+      - name: Upload performance results
         uses: actions/upload-artifact@v4
         with:
           name: performance-results
@@ -27,20 +45,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download test results
+      - name: Download performance results
         uses: actions/download-artifact@v5
         with:
           name: performance-results
 
-      - name: Show downloaded files
+      - name: Show downloaded results
         run: |
           echo "Downloaded files:"
-          ls -la
+          find . -type f
 
-      - name: Read test result
+      - name: Read JMeter log
         run: |
-          echo "Result:"
-          cat result.txt
+          echo "JMeter log:"
+          cat jmeter.log
 
-          echo "Metrics:"
-          cat metrics.txt
+      - name: Read test results
+        run: |
+          echo "JTL:"
+          cat results.jtl
+
+      - name: Read HTML report
+        run: |
+          echo "HTML report:"
+          cat html-report/index.html
