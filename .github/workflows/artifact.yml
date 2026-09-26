@@ -1,0 +1,20 @@
+name: Artifact Practice
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  upload-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create result file
+        run: echo "Performance test completed" > result.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-result
+          path: result.txt
