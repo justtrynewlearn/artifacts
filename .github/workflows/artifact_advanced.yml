@@ -1,0 +1,78 @@
+name: Artifact Advanced Practice
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [staging, production]
+        threads: [10, 50]
+
+    steps:
+      - name: Create performance results
+        run: |
+          mkdir -p results/html-report
+
+          echo "environment,threads,response_time,status" > results/results.jtl
+          echo "${{ matrix.environment }},${{ matrix.threads }},120,200" >> results/results.jtl
+          echo "${{ matrix.environment }},${{ matrix.threads }},150,200" >> results/results.jtl
+          echo "${{ matrix.environment }},${{ matrix.threads }},95,200" >> results/results.jtl
+
+          echo "Environment: ${{ matrix.environment }}" > results/jmeter.log
+          echo "Threads: ${{ matrix.threads }}" >> results/jmeter.log
+          echo "JMeter test completed successfully" >> results/jmeter.log
+
+          echo "<html><body>" > results/html-report/index.html
+          echo "<h1>Performance Test Report</h1>" >> results/html-report/index.html
+          echo "<p>Environment: ${{ matrix.environment }}</p>" >> results/html-report/index.html
+          echo "<p>Threads: ${{ matrix.threads }}</p>" >> results/html-report/index.html
+          echo "</body></html>" >> results/html-report/index.html
+
+          echo "Environment=${{ matrix.environment }}" > results/.test-info
+          echo "Threads=${{ matrix.threads }}" >> results/.test-info
+
+      - name: Show generated files
+        run: |
+          echo "Generated files:"
+          find results -type f
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-${{ matrix.environment }}-${{ matrix.threads }}
+          path: results/
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+
+  download-one-artifact:
+    needs: performance-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download staging 50 artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: performance-staging-50
+          path: downloaded-results
+
+      - name: Show downloaded artifact
+        run: |
+          echo "Downloaded files:"
+          find downloaded-results -type f
+
+      - name: Read test information
+        run: |
+          echo "Test information:"
+          cat downloaded-results/.test-info
+
+      - name: Read JTL
+        run: |
+          echo "JTL:"
+          cat downloaded-results/results.jtl
