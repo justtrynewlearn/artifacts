@@ -1,0 +1,40 @@
+name: Artifact Failure Practice
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create performance results
+        run: |
+          mkdir -p results/html-report
+
+          echo "time,response_time,status" > results/results.jtl
+          echo "10:00:01,120,200" >> results/results.jtl
+          echo "10:00:02,150,500" >> results/results.jtl
+          echo "10:00:03,95,200" >> results/results.jtl
+
+          echo "Performance test failed" > results/jmeter.log
+
+          echo "<html><body>" > results/html-report/index.html
+          echo "<h1>Performance Test FAILED</h1>" >> results/html-report/index.html
+          echo "<p>One request returned HTTP 500</p>" >> results/html-report/index.html
+          echo "</body></html>" >> results/html-report/index.html
+
+      - name: Simulate performance test failure
+        run: |
+          echo "Performance test failed!"
+          exit 1
+
+      - name: Upload results after failure
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-failure-results
+          path: results/
+          if-no-files-found: error
