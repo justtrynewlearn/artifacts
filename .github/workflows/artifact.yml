@@ -10,11 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create result file
-        run: echo "Performance test completed" > result.txt
+      - name: Create result files
+        run: |
+          mkdir results
+          echo "Performance test completed" > results/result.txt
+          echo "Requests=1000" > results/metrics.csv
+          echo "<html><body>Performance Report</body></html>" > results/report.html
 
-      - name: Upload artifact
+      - name: Upload results directory
         uses: actions/upload-artifact@v4
         with:
-          name: test-result
-          path: result.txt
+          name: performance-results
+          path: results/
